@@ -30,7 +30,7 @@ fn main() -> GameResult {
 }
 impl GameState{
     fn new(ctx: &mut Context) -> GameResult<GameState> {
-        let tilemap = generation::generate_tilemap(1);
+        let tilemap = generation::generate_tilemap(2);
         let tilemap_mesh = generation::generate_tilemap_mesh(ctx, tilemap);
         let state = GameState{tilemap, tilemap_mesh};
         Ok(state)
