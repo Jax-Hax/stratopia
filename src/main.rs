@@ -27,7 +27,7 @@ fn main() -> GameResult {
 impl GameState{
     fn new(ctx: &mut Context) -> GameResult<GameState> {
         let mut state = GameState{};
-        generate_tilemap(&mut state, 1, 1.0, (8,8));
+        generate_tilemap(&mut state, 1231, 0.8);
         Ok(state)
     }
 }
@@ -80,8 +80,16 @@ impl event::EventHandler<ggez::GameError> for GameState {
 fn draw_game(canvas: &mut Canvas, state: &mut GameState){
 
 }
-fn generate_tilemap(state: &mut GameState, seed: u32, magnification: f32, tile_size: (u8,u8)){
+fn generate_tilemap(state: &mut GameState, seed: u32, magnification: f64){
     let perlin = Perlin::new(seed);
-    let (x_am,y_am) = tile_size;
-    let tile_array = [[Tile; 8]; 8];
+    const SIZE_X: usize = 8;
+    const SIZE_Y: usize = 8;
+    let tile_array = [[Tile {tile_type: TileType::Land, resource_type: ResourceType::None}; SIZE_X]; SIZE_Y];
+    println!("{}",perlin.get([2.211,2.321134]));
+    for row in 0..SIZE_X{
+        for col in 0..SIZE_Y{
+            print!("{} ", perlin.get([row as f64/magnification,col as f64/magnification]));
+        }
+        println!("");
+    }
 }

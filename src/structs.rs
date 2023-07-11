@@ -1,14 +1,25 @@
+#[derive(Clone, Copy)]
 pub struct Tile{
-    tile_type: TileType,
-    resource_type: ResourceType,
+    pub tile_type: TileType,
+    pub resource_type: ResourceType,
 }
+#[derive(Clone, Copy)]
 pub enum ResourceType{
-    Village,
+    Village(Village),
     None,
-
+    WaterResource(Resource)
 }
+#[derive(Clone, Copy)]
 pub enum TileType{
     Land,
     Water,
     Mountain,
+}
+#[derive(Clone, Copy)]
+pub struct Village{
+
+}
+#[derive(Clone, Copy)]
+pub struct Resource{
+
 }
