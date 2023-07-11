@@ -7,7 +7,7 @@ use ggez::{
 use std::path;
 mod structs;
 use structs::*;
-
+use noise::{NoiseFn, Perlin, Seedable};
 struct GameState{
 
 }
@@ -26,12 +26,13 @@ fn main() -> GameResult {
 }
 impl GameState{
     fn new(ctx: &mut Context) -> GameResult<GameState> {
-        let state = GameState{};
+        let mut state = GameState{};
+        generate_tilemap(&mut state, 1, 1.0, (8,8));
         Ok(state)
     }
 }
 impl event::EventHandler<ggez::GameError> for GameState {
-    fn update(&mut self, _ctx: &mut Context) -> GameResult {
+    fn update(&mut self, ctx: &mut Context) -> GameResult {
         Ok(())
     }
 
@@ -43,7 +44,7 @@ impl event::EventHandler<ggez::GameError> for GameState {
     }
     fn mouse_button_down_event(
         &mut self,
-        _ctx: &mut Context,
+        ctx: &mut Context,
         btn: MouseButton,
         x: f32,
         y: f32,
@@ -61,7 +62,7 @@ impl event::EventHandler<ggez::GameError> for GameState {
     }
     fn mouse_button_up_event(
         &mut self,
-        _ctx: &mut Context,
+        ctx: &mut Context,
         btn: MouseButton,
         x: f32,
         y: f32,
@@ -78,4 +79,9 @@ impl event::EventHandler<ggez::GameError> for GameState {
 }
 fn draw_game(canvas: &mut Canvas, state: &mut GameState){
 
+}
+fn generate_tilemap(state: &mut GameState, seed: u32, magnification: f32, tile_size: (u8,u8)){
+    let perlin = Perlin::new(seed);
+    let (x_am,y_am) = tile_size;
+    let tile_array = [[Tile; 8]; 8];
 }
