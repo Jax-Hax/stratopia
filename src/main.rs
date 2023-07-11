@@ -8,8 +8,11 @@ use std::path;
 mod structs;
 use structs::*;
 use noise::{NoiseFn, Perlin, Seedable};
+const MAP_X: usize = 16;
+const MAP_Y: usize = 16;
 struct GameState{
-
+    tilemap: [[TileType; MAP_X]; MAP_Y],
+    tilemap_mesh: Mesh
 }
 fn main() -> GameResult {
     let resource_dir = path::PathBuf::from("./resources");
@@ -26,8 +29,9 @@ fn main() -> GameResult {
 }
 impl GameState{
     fn new(ctx: &mut Context) -> GameResult<GameState> {
-        let mut state = GameState{};
-        generate_tilemap(&mut state, 1231, 0.8);
+        let tilemap = generate_tilemap( 1231, 25.0);
+        let tilemap_mesh = generate_tilemap_mesh(ctx, tilemap);
+        let state = GameState{tilemap, tilemap_mesh};
         Ok(state)
     }
 }
@@ -78,18 +82,49 @@ impl event::EventHandler<ggez::GameError> for GameState {
     }
 }
 fn draw_game(canvas: &mut Canvas, state: &mut GameState){
-
+    canvas.draw(&state.tilemap_mesh, DrawParam::default());
 }
-fn generate_tilemap(state: &mut GameState, seed: u32, magnification: f64){
+fn generate_tilemap( seed: u32, magnification: f64) -> [[structs::TileType; MAP_X]; MAP_Y]{
     let perlin = Perlin::new(seed);
-    const SIZE_X: usize = 8;
-    const SIZE_Y: usize = 8;
-    let tile_array = [[Tile {tile_type: TileType::Land, resource_type: ResourceType::None}; SIZE_X]; SIZE_Y];
-    println!("{}",perlin.get([2.211,2.321134]));
-    for row in 0..SIZE_X{
-        for col in 0..SIZE_Y{
-            print!("{} ", perlin.get([row as f64/magnification,col as f64/magnification]));
+    let mut tile_array = [[TileType::Water; MAP_X]; MAP_Y];
+    let mut min = 10.0;
+    let mut max = -10.0;
+    for row in 0..MAP_Y{
+        for col in 0..MAP_X{
+            let rand_num = perlin.get([(row as f64+0.5)/magnification,(col as f64+0.5)/magnification]);
+            if rand_num > max{
+                max = rand_num;
+            }
+            if rand_num < min{
+                min = rand_num;
+            }
+            if rand_num < -0.1{
+                tile_array[row][col] = TileType::Land;
+            }
+            else if rand_num > 0.1{
+                tile_array[row][col] = TileType::Mountain;
+            }
         }
-        println!("");
     }
+    println!("min: {}, max: {}", min, max);
+    tile_array
+}
+fn generate_tilemap_mesh(ctx: &Context, tilemap: [[structs::TileType; MAP_X]; MAP_Y]) -> Mesh{
+    let mut mesh_builder = MeshBuilder::new();
+    for row in 0..MAP_X {
+        for col in 0..MAP_Y {
+            let tile = tilemap[col][row];
+
+            let color = match tile{
+                TileType::Land => Color::from_rgb(50, 252, 0),
+                TileType::Water => Color::from_rgb(30, 144, 255),
+                TileType::Mountain => Color::from_rgb(192, 192, 192),
+            };
+            let x = row as f32 * 100.0;
+            let y = col as f32 * 100.0;
+            let rect = Rect::new(x, y, 100.0, 100.0);
+            let _ = mesh_builder.rectangle(DrawMode::fill(), rect, color);
+        }
+    }
+    Mesh::from_data(ctx, mesh_builder.build())
 }

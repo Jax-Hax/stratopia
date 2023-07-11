@@ -1,9 +1,4 @@
 #[derive(Clone, Copy)]
-pub struct Tile{
-    pub tile_type: TileType,
-    pub resource_type: ResourceType,
-}
-#[derive(Clone, Copy)]
 pub enum ResourceType{
     Village(Village),
     None,
