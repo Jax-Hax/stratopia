@@ -12,7 +12,8 @@ const MAGNIFICATION: f64 = 10.0;
 const WATER_VALUES: [f64; 2] = [0.15,-0.1]; //less than value 1 and greater than value 2
 const MOUNTAIN_VALUES: [f64; 2] = [-0.5,-1.0]; //less than value 1 and greater than value 2
 //The different splits of the tilemap, 4 squares on each side with a gap in the middle and a middle village
-
+const STARTING_OFFSET: usize = 2; //how far off you are from the corner of the map
+const VILLAGE_DISTANCE: usize = 5; //how far the 3 other starter villages are from the player
 pub fn generate_tilemap( seed: u32 ) -> [[TileType; MAP_X]; MAP_Y]{
     //Generates a new perlin seed and gets a value from it for each tile, based on magnification. It then checks to see what tile type it should be.
     let perlin = Perlin::new(seed);
@@ -28,14 +29,29 @@ pub fn generate_tilemap( seed: u32 ) -> [[TileType; MAP_X]; MAP_Y]{
             }
         }
     }
+
     //Make a guaranteed path to the villages
     //you start at two spaces away from your corner, so top left would be [2,2]
     //then there is a village on you, a village 4 spaces to both sides, and a village diagonally towards the middle 4 spaces away, making a square of villages that is 6x6
-    for row in 0..4{
-        tile_array[2+row][2] = TileType::Land; //top left
-            /*tile_array[row+3][MAP_X-3] = TileType::Land; //top right
-            tile_array[MAP_Y-3][col+3] = TileType::Land; //bottom left
-            tile_array[MAP_Y-3][MAP_X-3] = TileType::Land; //bottom right*/
+    //offsets some by -1 because of zero indexed arrays
+    for offset in 0..VILLAGE_DISTANCE{
+        //verticals
+        tile_array[STARTING_OFFSET+offset][STARTING_OFFSET] = TileType::Land; //top left
+        tile_array[MAP_Y-STARTING_OFFSET-1-offset][STARTING_OFFSET] = TileType::Land; //bottom left
+        tile_array[STARTING_OFFSET+offset][MAP_X-STARTING_OFFSET-1] = TileType::Land; //top right
+        tile_array[MAP_Y-STARTING_OFFSET-1-offset][MAP_X-STARTING_OFFSET-1] = TileType::Land; //bottom right
+        
+        //horizontals
+        tile_array[STARTING_OFFSET][STARTING_OFFSET+offset] = TileType::Land; //top left
+        tile_array[MAP_Y-STARTING_OFFSET-1][STARTING_OFFSET+offset] = TileType::Land; //bottom left
+        tile_array[STARTING_OFFSET][MAP_X-STARTING_OFFSET-1-offset] = TileType::Land; //top right
+        tile_array[MAP_Y-STARTING_OFFSET-1][MAP_X-STARTING_OFFSET-1-offset] = TileType::Land; //bottom right
+        
+        //diagonals
+        tile_array[STARTING_OFFSET+offset][STARTING_OFFSET+offset] = TileType::Land; //top left
+        tile_array[MAP_Y-STARTING_OFFSET-1-offset][STARTING_OFFSET+offset] = TileType::Land; //bottom left
+        tile_array[STARTING_OFFSET+offset][MAP_X-STARTING_OFFSET-1-offset] = TileType::Land; //top right
+        tile_array[MAP_Y-STARTING_OFFSET-1-offset][MAP_X-STARTING_OFFSET-1-offset] = TileType::Land; //bottom right
     }
     tile_array
 }
@@ -59,11 +75,14 @@ pub fn generate_tilemap_mesh(ctx: &Context, tilemap: [[TileType; MAP_X]; MAP_Y])
     }
     Mesh::from_data(ctx, mesh_builder.build())
 }
-/*pub fn generate_resource_map(tilemap: &mut [[TileType; MAP_X]; MAP_Y], seed: u32) -> [[ResourceType; MAP_X]; MAP_Y]{
-    let num_villages = 
+pub fn generate_resource_map(tilemap: &mut [[TileType; MAP_X]; MAP_Y], seed: u32) -> [[ResourceType; MAP_X]; MAP_Y]{
+    generate_villages(tilemap);
 
 
-}*/
+}
+fn generate_villages(tilemap: &mut [[TileType; MAP_X]; MAP_Y]){
+    //guarenteed starter villages
+}
 fn get_random_resource(tile_type: TileType,resources_left: u32){
 
 }

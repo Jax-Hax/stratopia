@@ -32,7 +32,7 @@ fn main() -> GameResult {
 }
 impl GameState{
     fn new(ctx: &mut Context) -> GameResult<GameState> {
-        let mut tilemap = generation::generate_tilemap(2);
+        let mut tilemap = generation::generate_tilemap(1);
         let tilemap_mesh = generation::generate_tilemap_mesh(ctx, tilemap);
         //let resource_map = generation::generate_resource_map(&mut tilemap,2);
         let state = GameState{tilemap, tilemap_mesh,camera_position: ggez::mint::Point2 { x: 0.0, y: 0.0 },frames: 0};
