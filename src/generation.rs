@@ -18,6 +18,8 @@ const MOUNTAIN_VALUES: [f64; 2] = [-0.5,-1.0]; //less than value 1 and greater t
 //The different splits of the tilemap, 4 squares on each side with a gap in the middle and a middle village
 const STARTING_OFFSET: usize = 2; //how far off you are from the corner of the map
 const VILLAGE_DISTANCE: usize = 5; //how far the 3 other starter villages are from the player
+const VILLAGE_OFFSET_FROM_MID_X:usize = (MAP_X%14)/2; //how far apart the villages should be from the middle
+const VILLAGE_OFFSET_FROM_MID_Y:usize = (MAP_Y%14)/2; //how far apart the villages should be from the middle
 pub fn generate_tilemap( seed: u32 ) -> [[TileType; MAP_X]; MAP_Y]{
     //Generates a new perlin seed and gets a value from it for each tile, based on magnification. It then checks to see what tile type it should be.
     let perlin = Perlin::new(seed);
@@ -113,10 +115,10 @@ pub fn generate_resource_map(tilemap: &mut [[TileType; MAP_X]; MAP_Y], seed: u64
     resource_array[MAP_Y/2-rng.gen_range(0..=1)][MAP_X/2-rng.gen_range(0..=1)] = DEFAULT_VILLAGE;
     
     //random villages for each side
-    resource_array[MAP_Y/2-rng.gen_range(0..=1)][MAP_X/2+4+rng.gen_range(0..=5)] = DEFAULT_VILLAGE; //right
-    resource_array[MAP_Y/2-rng.gen_range(0..=1)][MAP_X/2-5-rng.gen_range(0..=5)] = DEFAULT_VILLAGE; //left
-    resource_array[MAP_Y/2+4+rng.gen_range(0..=5)][MAP_X/2-rng.gen_range(0..=1)] = DEFAULT_VILLAGE; //bottom
-    resource_array[MAP_Y/2-5-rng.gen_range(0..=5)][MAP_X/2-rng.gen_range(0..=1)] = DEFAULT_VILLAGE; //top
+    resource_array[MAP_Y/2-rng.gen_range(0..=1)][MAP_X/2+VILLAGE_OFFSET_FROM_MID_X+rng.gen_range(0..=5)] = DEFAULT_VILLAGE; //right
+    resource_array[MAP_Y/2-rng.gen_range(0..=1)][MAP_X/2-VILLAGE_OFFSET_FROM_MID_X-1-rng.gen_range(0..=5)] = DEFAULT_VILLAGE; //left  
+    resource_array[MAP_Y/2+VILLAGE_OFFSET_FROM_MID_Y+rng.gen_range(0..=5)][MAP_X/2-rng.gen_range(0..=1)] = DEFAULT_VILLAGE; //bottom 
+    resource_array[MAP_Y/2-VILLAGE_OFFSET_FROM_MID_Y-1-rng.gen_range(0..=5)][MAP_X/2-rng.gen_range(0..=1)] = DEFAULT_VILLAGE; //top 
     resource_array
 }
 fn get_random_resource(tile_type: TileType,resources_left: u32){
