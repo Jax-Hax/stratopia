@@ -82,10 +82,15 @@ pub fn generate_tilemap_mesh(ctx: &Context, tilemap: [[TileType; MAP_X]; MAP_Y])
     Mesh::from_data(ctx, mesh_builder.build())
 }
 pub fn generate_resource_map(tilemap: &mut [[TileType; MAP_X]; MAP_Y], seed: u64) -> [[ResourceType; MAP_X]; MAP_Y]{
+    //Split into 4 sectors, for each corner of the map. Then, do the dividers in the lines down the middle. Then put a village in the center.
     let mut resource_array = [[ResourceType::None; MAP_X]; MAP_Y];
+    generate_villages(tilemap, &mut resource_array, seed);
+    resource_array
+}
+fn generate_villages(tilemap: &mut [[TileType; MAP_X]; MAP_Y], resource_array: &mut [[ResourceType; MAP_X]; MAP_Y], seed: u64){
+    //TODO: possibly make it replace the tilemap with land where villages are, or just have water villages idk
     const DEFAULT_VILLAGE: ResourceType = ResourceType::Village(Village {  });
     let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
-    //Split into 4 sectors, for each corner of the map. Then, do the dividers in the lines down the middle. Then put a village in the center.
     //TODO: Have each village offset by a value of 1, so it could generate 1 to the left, right, etc for some randomness
     //top left
     resource_array[STARTING_OFFSET][STARTING_OFFSET] = DEFAULT_VILLAGE;
@@ -119,7 +124,6 @@ pub fn generate_resource_map(tilemap: &mut [[TileType; MAP_X]; MAP_Y], seed: u64
     resource_array[MAP_Y/2-rng.gen_range(0..=1)][MAP_X/2-VILLAGE_OFFSET_FROM_MID_X-1-rng.gen_range(0..=5)] = DEFAULT_VILLAGE; //left  
     resource_array[MAP_Y/2+VILLAGE_OFFSET_FROM_MID_Y+rng.gen_range(0..=5)][MAP_X/2-rng.gen_range(0..=1)] = DEFAULT_VILLAGE; //bottom 
     resource_array[MAP_Y/2-VILLAGE_OFFSET_FROM_MID_Y-1-rng.gen_range(0..=5)][MAP_X/2-rng.gen_range(0..=1)] = DEFAULT_VILLAGE; //top 
-    resource_array
 }
 fn get_random_resource(tile_type: TileType,resources_left: u32){
 
