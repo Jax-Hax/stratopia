@@ -4,15 +4,18 @@ use ggez::{
     graphics::{self, Canvas, DrawMode, DrawParam, Image, Mesh, MeshBuilder, Rect},
     Context, GameResult,
 };
+use rand::Rng;
 use std::path;
 mod structs;
 use structs::*;
 mod generation;
-const MAP_X: usize = 20;
-const MAP_Y: usize = 20;
+const MAP_X: usize = 22;
+const MAP_Y: usize = 22;
 struct GameState{
     tilemap: [[TileType; MAP_X]; MAP_Y],
     tilemap_mesh: Mesh,
+    resource_map: [[ResourceType; MAP_X]; MAP_Y],
+    resource_map_mesh: Mesh,
     // Store the camera position
     camera_position: ggez::mint::Point2<f32>,
     frames: usize,
@@ -32,10 +35,12 @@ fn main() -> GameResult {
 }
 impl GameState{
     fn new(ctx: &mut Context) -> GameResult<GameState> {
-        let mut tilemap = generation::generate_tilemap(1);
+        let seed = rand::thread_rng().gen();
+        let mut tilemap = generation::generate_tilemap(seed);
+        let resource_map = generation::generate_resource_map(&mut tilemap, seed as u64);
         let tilemap_mesh = generation::generate_tilemap_mesh(ctx, tilemap);
-        //let resource_map = generation::generate_resource_map(&mut tilemap,2);
-        let state = GameState{tilemap, tilemap_mesh,camera_position: ggez::mint::Point2 { x: 0.0, y: 0.0 },frames: 0};
+        let resource_map_mesh = generation::generate_resource_map_mesh(ctx, resource_map);
+        let state = GameState{tilemap, tilemap_mesh,resource_map,resource_map_mesh, camera_position: ggez::mint::Point2 { x: 0.0, y: 0.0 },frames: 0};
         Ok(state)
     }
 }
@@ -103,4 +108,5 @@ impl event::EventHandler<ggez::GameError> for GameState {
 }
 fn draw_game(canvas: &mut Canvas, state: &mut GameState){
     canvas.draw(&state.tilemap_mesh, DrawParam::dest(DrawParam::default(),state.camera_position));
+    canvas.draw(&state.resource_map_mesh, DrawParam::dest(DrawParam::default(),state.camera_position));
 }

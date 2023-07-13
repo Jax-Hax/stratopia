@@ -4,13 +4,17 @@ use ggez::{
     Context,
 };
 use crate::structs::*;
+use rand::{Rng, SeedableRng};
 //Constants
-const MAP_X: usize = 20; //This number unfortunately has to be fixed as I couldn't wrap my head around calculating everything for any possible number
-const MAP_Y: usize = 20; //This number unfortunately has to be fixed as I couldn't wrap my head around calculating everything for any possible number
+const MAP_X: usize = 22; //This number unfortunately has to be fixed as I couldn't wrap my head around calculating everything for any possible number
+const MAP_Y: usize = 22; //This number unfortunately has to be fixed as I couldn't wrap my head around calculating everything for any possible number
 const MAGNIFICATION: f64 = 10.0;
 //What numbers generate water and what generates mountains. The rest of the tiles are land tiles.
+//RIVER BASED
 const WATER_VALUES: [f64; 2] = [0.15,-0.1]; //less than value 1 and greater than value 2
 const MOUNTAIN_VALUES: [f64; 2] = [-0.5,-1.0]; //less than value 1 and greater than value 2
+//LAKE BASED
+//Work in progress
 //The different splits of the tilemap, 4 squares on each side with a gap in the middle and a middle village
 const STARTING_OFFSET: usize = 2; //how far off you are from the corner of the map
 const VILLAGE_DISTANCE: usize = 5; //how far the 3 other starter villages are from the player
@@ -75,14 +79,67 @@ pub fn generate_tilemap_mesh(ctx: &Context, tilemap: [[TileType; MAP_X]; MAP_Y])
     }
     Mesh::from_data(ctx, mesh_builder.build())
 }
-pub fn generate_resource_map(tilemap: &mut [[TileType; MAP_X]; MAP_Y], seed: u32) -> [[ResourceType; MAP_X]; MAP_Y]{
-    generate_villages(tilemap);
+pub fn generate_resource_map(tilemap: &mut [[TileType; MAP_X]; MAP_Y], seed: u64) -> [[ResourceType; MAP_X]; MAP_Y]{
+    let mut resource_array = [[ResourceType::None; MAP_X]; MAP_Y];
+    const DEFAULT_VILLAGE: ResourceType = ResourceType::Village(Village {  });
+    let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
+    //Split into 4 sectors, for each corner of the map. Then, do the dividers in the lines down the middle. Then put a village in the center.
+    //TODO: Have each village offset by a value of 1, so it could generate 1 to the left, right, etc for some randomness
+    //top left
+    resource_array[STARTING_OFFSET][STARTING_OFFSET] = DEFAULT_VILLAGE;
+    resource_array[STARTING_OFFSET][VILLAGE_DISTANCE+STARTING_OFFSET] = DEFAULT_VILLAGE;
+    resource_array[VILLAGE_DISTANCE+STARTING_OFFSET][STARTING_OFFSET] = DEFAULT_VILLAGE;
+    resource_array[VILLAGE_DISTANCE+STARTING_OFFSET][VILLAGE_DISTANCE+STARTING_OFFSET] = DEFAULT_VILLAGE;
 
+    //bottom left
+    resource_array[MAP_Y-STARTING_OFFSET-1][STARTING_OFFSET] = DEFAULT_VILLAGE;
+    resource_array[MAP_Y-STARTING_OFFSET-1][VILLAGE_DISTANCE+STARTING_OFFSET] = DEFAULT_VILLAGE;
+    resource_array[MAP_Y-(VILLAGE_DISTANCE+STARTING_OFFSET)-1][STARTING_OFFSET] = DEFAULT_VILLAGE;
+    resource_array[MAP_Y-(VILLAGE_DISTANCE+STARTING_OFFSET)-1][VILLAGE_DISTANCE+STARTING_OFFSET] = DEFAULT_VILLAGE;
 
-}
-fn generate_villages(tilemap: &mut [[TileType; MAP_X]; MAP_Y]){
-    //guarenteed starter villages
+    //top right
+    resource_array[STARTING_OFFSET][MAP_X-STARTING_OFFSET-1] = DEFAULT_VILLAGE;
+    resource_array[STARTING_OFFSET][MAP_X-(VILLAGE_DISTANCE+STARTING_OFFSET)-1] = DEFAULT_VILLAGE;
+    resource_array[VILLAGE_DISTANCE+STARTING_OFFSET][MAP_X-STARTING_OFFSET-1] = DEFAULT_VILLAGE;
+    resource_array[VILLAGE_DISTANCE+STARTING_OFFSET][MAP_X-(VILLAGE_DISTANCE+STARTING_OFFSET)-1] = DEFAULT_VILLAGE;
+
+    //bottom right
+    resource_array[MAP_Y-STARTING_OFFSET-1][MAP_X-STARTING_OFFSET-1] = DEFAULT_VILLAGE;
+    resource_array[MAP_Y-STARTING_OFFSET-1][MAP_X-(VILLAGE_DISTANCE+STARTING_OFFSET)-1] = DEFAULT_VILLAGE;
+    resource_array[MAP_Y-(VILLAGE_DISTANCE+STARTING_OFFSET)-1][MAP_X-STARTING_OFFSET-1] = DEFAULT_VILLAGE;
+    resource_array[MAP_Y-(VILLAGE_DISTANCE+STARTING_OFFSET)-1][MAP_X-(VILLAGE_DISTANCE+STARTING_OFFSET)-1] = DEFAULT_VILLAGE;
+
+    //middle village
+    resource_array[MAP_Y/2-rng.gen_range(0..=1)][MAP_X/2-rng.gen_range(0..=1)] = DEFAULT_VILLAGE;
+    
+    //random villages for each side
+    resource_array[MAP_Y/2-rng.gen_range(0..=1)][MAP_X/2+4+rng.gen_range(0..=5)] = DEFAULT_VILLAGE; //right
+    resource_array[MAP_Y/2-rng.gen_range(0..=1)][MAP_X/2-5-rng.gen_range(0..=5)] = DEFAULT_VILLAGE; //left
+    resource_array[MAP_Y/2+4+rng.gen_range(0..=5)][MAP_X/2-rng.gen_range(0..=1)] = DEFAULT_VILLAGE; //bottom
+    resource_array[MAP_Y/2-5-rng.gen_range(0..=5)][MAP_X/2-rng.gen_range(0..=1)] = DEFAULT_VILLAGE; //top
+    resource_array
 }
 fn get_random_resource(tile_type: TileType,resources_left: u32){
 
+}
+pub fn generate_resource_map_mesh(ctx: &Context, resource_map: [[ResourceType; MAP_X]; MAP_Y]) -> Mesh{
+    //Makes a mesh of the terrain
+    let mut mesh_builder = MeshBuilder::new();
+    for row in 0..MAP_X {
+        for col in 0..MAP_Y {
+            let resource = resource_map[col][row];
+            if let ResourceType::None = resource{
+                continue;
+            } 
+            let color = match resource{
+                ResourceType::Village(_) => Color::from_rgb(101, 67, 33),
+                _ => Color::from_rgb(55, 55, 55)
+            };
+            let x = row as f32 * 50.0;
+            let y = col as f32 * 50.0;
+            let rect = Rect::new(x, y, 50.0, 50.0);
+            let _ = mesh_builder.rectangle(DrawMode::fill(), rect, color);
+        }
+    }
+    Mesh::from_data(ctx, mesh_builder.build())
 }

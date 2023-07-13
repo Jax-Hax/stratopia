@@ -2,7 +2,9 @@
 pub enum ResourceType{
     Village(Village),
     None,
-    WaterResource(Resource)
+    WaterResource(Resource),
+    LandResource(Resource),
+    MountainResource(Resource),
 }
 #[derive(Clone, Copy)]
 pub enum TileType{
