@@ -16,14 +16,15 @@ struct GameState{
     tilemap_mesh: Mesh,
     resource_map: [[ResourceType; MAP_X]; MAP_Y],
     resource_map_mesh: Mesh,
+    soldier_map: [[Soldier; MAP_X]; MAP_Y],
     // Store the camera position
     camera_position: ggez::mint::Point2<f32>,
     zoom: ggez::mint::Point2<f32>,
     frames: usize,
-    soldier_types: SoldierTypes
+    soldier_images: SoldierImages,
 }
-struct SoldierTypes{
-    default: SoldierType
+struct SoldierImages{
+    default: Image
 }
 fn main() -> GameResult {
     let resource_dir = path::PathBuf::from("./resources");
@@ -45,9 +46,9 @@ impl GameState{
         let resource_map = generation::generate_resource_map(&mut tilemap, seed as u64);
         let tilemap_mesh = generation::generate_tilemap_mesh(ctx, tilemap);
         let resource_map_mesh = generation::generate_resource_map_mesh(ctx, resource_map);
-        let soldier_types = initialize_soldier_types(ctx);
-        let soldier_map = generation::generate_soldier_map(soldier_types);
-        let state = GameState{tilemap, tilemap_mesh,resource_map,resource_map_mesh,soldier_types ,camera_position: ggez::mint::Point2 { x: 0.0, y: 0.0 },zoom: ggez::mint::Point2 { x: 1.0, y: 1.0 }, frames: 0};
+        let soldier_images = initialize_soldier_images(ctx);
+        let soldier_map = generation::generate_soldier_map();
+        let state = GameState{tilemap, tilemap_mesh,resource_map,resource_map_mesh,soldier_map, soldier_images ,camera_position: ggez::mint::Point2 { x: 0.0, y: 0.0 },zoom: ggez::mint::Point2 { x: 1.0, y: 1.0 }, frames: 0};
         Ok(state)
     }
 }
@@ -133,9 +134,27 @@ fn draw_game(canvas: &mut Canvas, state: &mut GameState){
     let default_draw_param = DrawParam::dest(DrawParam::default(),state.camera_position).scale(state.zoom);
     canvas.draw(&state.tilemap_mesh, default_draw_param);
     canvas.draw(&state.resource_map_mesh, default_draw_param);
+    draw_soldiers(canvas, state.soldier_map,state.soldier_images);
 }
-fn initialize_soldier_types(ctx: &mut Context) -> SoldierTypes{
-    let default_soldier = SoldierType{image: Image::from_path(ctx, "/king_w.png").unwrap(),damage: 5, health: 10};
-    let soldier_types = SoldierTypes{default: default_soldier};
-    soldier_types
+fn initialize_soldier_images(ctx: &mut Context) -> SoldierImages{
+    let soldier_images = SoldierImages{default: Image::from_path(ctx, "/soldier.png").unwrap()};
+    soldier_images
+}
+fn draw_soldiers(canvas: &mut Canvas, soldier_map:[[Soldier; MAP_X]; MAP_Y],soldier_images: SoldierImages){
+    for row in 0..MAP_X {
+        for col in 0..MAP_Y {
+            let soldier = soldier_map[col][row];
+            if let SoldierType::None = soldier.soldier_type{
+                continue;
+            } 
+            let image = match soldier.soldier_type{
+                SoldierType::Default => soldier_images.default,
+                _ => soldier_images.default
+            };
+            let x = row as f32 * 50.0;
+            let y = col as f32 * 50.0;
+            let rect = Rect::new(x, y, 50.0, 50.0);
+            canvas.draw(soldier_images.default, draw_param);
+        }
+    }
 }

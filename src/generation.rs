@@ -3,7 +3,7 @@ use ggez::{
     graphics::{Color, DrawMode, Mesh, MeshBuilder, Rect},
     Context,
 };
-use crate::{structs::*, SoldierTypes};
+use crate::{structs::*, SoldierImages};
 use rand::{Rng, SeedableRng};
 //Constants
 const MAP_X: usize = 22; //This number unfortunately has to be fixed as I couldn't wrap my head around calculating everything for any possible number
@@ -149,8 +149,13 @@ pub fn generate_resource_map_mesh(ctx: &Context, resource_map: [[ResourceType; M
     }
     Mesh::from_data(ctx, mesh_builder.build())
 }
-pub fn generate_soldier_map(soldier_types: SoldierTypes) -> [[IsSoldier; MAP_X]; MAP_Y]{
-    let mut soldier_array = [[IsSoldier::None; MAP_X]; MAP_Y];
-    soldier_array[STARTING_OFFSET][STARTING_OFFSET] = Soldier{soldier_type: soldier_types.default, health: soldier_types.default.health, position_x: STARTING_OFFSET,position_y:STARTING_OFFSET};
+pub fn generate_soldier_map() -> [[Soldier; MAP_X]; MAP_Y]{
+    //puts a soldier on each starting village
+    let mut soldier_array = [[Soldier{..Default::default()}; MAP_X]; MAP_Y];
+    const DEFAULT_SOLDIER:Soldier = Soldier{soldier_type: SoldierType::Default, health: 10, damage: 10, defense: 0, movement: 1, range: 1};
+    soldier_array[STARTING_OFFSET][STARTING_OFFSET] = DEFAULT_SOLDIER;
+    soldier_array[MAP_Y-STARTING_OFFSET-1][STARTING_OFFSET] = DEFAULT_SOLDIER;
+    soldier_array[STARTING_OFFSET][MAP_X-STARTING_OFFSET-1] = DEFAULT_SOLDIER;
+    soldier_array[MAP_Y-STARTING_OFFSET-1][MAP_X-STARTING_OFFSET-1] = DEFAULT_SOLDIER;
     soldier_array
 }

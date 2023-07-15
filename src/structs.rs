@@ -22,21 +22,18 @@ pub struct Village{
 pub struct Resource{
 
 }
-#[derive(Clone, Copy)]
-pub enum IsSoldier{
-    None,
-    Soldier(Soldier)
-}
-#[derive(Clone, Copy)]
+#[derive(Clone,Copy,Default)]
 pub struct Soldier{
     pub soldier_type: SoldierType,
-    pub position_x: u8,
-    pub position_y: u8,
-    pub health: u8
-}
-#[derive(Clone, Copy)]
-pub struct SoldierType{
-    pub image: Image,
+    pub health: u8,
     pub damage: u8,
-    pub health: u8
+    pub defense: u8,
+    pub range: u8,
+    pub movement: u8
+}
+#[derive(Clone,Copy,Default)]
+pub enum SoldierType{
+    #[default]
+    None,
+    Default,
 }
