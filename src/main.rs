@@ -18,6 +18,7 @@ struct GameState{
     resource_map_mesh: Mesh,
     // Store the camera position
     camera_position: ggez::mint::Point2<f32>,
+    zoom: ggez::mint::Point2<f32>,
     frames: usize,
 }
 fn main() -> GameResult {
@@ -40,7 +41,7 @@ impl GameState{
         let resource_map = generation::generate_resource_map(&mut tilemap, seed as u64);
         let tilemap_mesh = generation::generate_tilemap_mesh(ctx, tilemap);
         let resource_map_mesh = generation::generate_resource_map_mesh(ctx, resource_map);
-        let state = GameState{tilemap, tilemap_mesh,resource_map,resource_map_mesh, camera_position: ggez::mint::Point2 { x: 0.0, y: 0.0 },frames: 0};
+        let state = GameState{tilemap, tilemap_mesh,resource_map,resource_map_mesh, camera_position: ggez::mint::Point2 { x: 0.0, y: 0.0 },zoom: ggez::mint::Point2 { x: 1.0, y: 1.0 }, frames: 0};
         Ok(state)
     }
 }
@@ -53,6 +54,7 @@ impl event::EventHandler<ggez::GameError> for GameState {
         let mut canvas = Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
         draw_game(&mut canvas, self);
         canvas.finish(ctx)?;
+        //print frames
         self.frames += 1;
         if (self.frames % 100) == 0 {
             println!("FPS: {}", ctx.time.fps());
@@ -98,15 +100,28 @@ impl event::EventHandler<ggez::GameError> for GameState {
         dx: f32,
         dy: f32,
     ) -> GameResult {
+        //move the camera around with right mouse button
         if ctx.mouse.button_pressed(MouseButton::Right) {
             self.camera_position.x += dx;
             self.camera_position.y += dy;
         }
         Ok(())
     }
+    fn mouse_wheel_event(&mut self, _ctx: &mut Context, _x: f32, y: f32) -> GameResult {
+        //zoom the camera in and out
+        if y > 0.0 {
+            self.zoom.x = self.zoom.x + 0.1;
+            self.zoom.y = self.zoom.y + 0.1;
+        } else if y < 0.0 {
+            self.zoom.x = self.zoom.x - 0.1;
+            self.zoom.y = self.zoom.y - 0.1;
+        }
+        Ok(())
+    }
     
 }
 fn draw_game(canvas: &mut Canvas, state: &mut GameState){
-    canvas.draw(&state.tilemap_mesh, DrawParam::dest(DrawParam::default(),state.camera_position));
-    canvas.draw(&state.resource_map_mesh, DrawParam::dest(DrawParam::default(),state.camera_position));
+    let default_draw_param = DrawParam::dest(DrawParam::default(),state.camera_position).scale(state.zoom);
+    canvas.draw(&state.tilemap_mesh, default_draw_param);
+    canvas.draw(&state.resource_map_mesh, default_draw_param);
 }
