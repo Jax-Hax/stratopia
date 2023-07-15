@@ -116,11 +116,14 @@ impl event::EventHandler<ggez::GameError> for GameState {
             self.zoom.x = self.zoom.x - 0.1;
             self.zoom.y = self.zoom.y - 0.1;
         }
+        self.zoom.x = self.zoom.x.clamp(0.5, 3.0);
+        self.zoom.y = self.zoom.y.clamp(0.5, 3.0);
         Ok(())
     }
     
 }
 fn draw_game(canvas: &mut Canvas, state: &mut GameState){
+    //TODO: implement the zoom better, calculating an offset to make it zoom based on the center maybe
     let default_draw_param = DrawParam::dest(DrawParam::default(),state.camera_position).scale(state.zoom);
     canvas.draw(&state.tilemap_mesh, default_draw_param);
     canvas.draw(&state.resource_map_mesh, default_draw_param);
