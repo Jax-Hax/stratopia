@@ -46,6 +46,7 @@ impl GameState{
         let tilemap_mesh = generation::generate_tilemap_mesh(ctx, tilemap);
         let resource_map_mesh = generation::generate_resource_map_mesh(ctx, resource_map);
         let soldier_types = initialize_soldier_types(ctx);
+        let soldier_map = generation::generate_soldier_map(soldier_types);
         let state = GameState{tilemap, tilemap_mesh,resource_map,resource_map_mesh,soldier_types ,camera_position: ggez::mint::Point2 { x: 0.0, y: 0.0 },zoom: ggez::mint::Point2 { x: 1.0, y: 1.0 }, frames: 0};
         Ok(state)
     }

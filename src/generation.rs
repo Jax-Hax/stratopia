@@ -3,7 +3,7 @@ use ggez::{
     graphics::{Color, DrawMode, Mesh, MeshBuilder, Rect},
     Context,
 };
-use crate::structs::*;
+use crate::{structs::*, SoldierTypes};
 use rand::{Rng, SeedableRng};
 //Constants
 const MAP_X: usize = 22; //This number unfortunately has to be fixed as I couldn't wrap my head around calculating everything for any possible number
@@ -149,33 +149,8 @@ pub fn generate_resource_map_mesh(ctx: &Context, resource_map: [[ResourceType; M
     }
     Mesh::from_data(ctx, mesh_builder.build())
 }
-pub fn generate_soldier_map() -> [[IsSoldier; MAP_X]; MAP_Y]{
+pub fn generate_soldier_map(soldier_types: SoldierTypes) -> [[IsSoldier; MAP_X]; MAP_Y]{
     let mut soldier_array = [[IsSoldier::None; MAP_X]; MAP_Y];
-    let default_soldier_type = SoldierType{}
-    let default_soldier = Soldier{}
-    tile_array[row][col] = TileType::Water;
-    //Make a guaranteed path to the villages
-    //you start at two spaces away from your corner, so top left would be [2,2]
-    //then there is a village on you, a village 4 spaces to both sides, and a village diagonally towards the middle 4 spaces away, making a square of villages that is 6x6
-    //offsets some by -1 because of zero indexed arrays
-    for offset in 0..VILLAGE_DISTANCE{
-        //verticals
-        tile_array[STARTING_OFFSET+offset][STARTING_OFFSET] = TileType::Land; //top left
-        tile_array[MAP_Y-STARTING_OFFSET-1-offset][STARTING_OFFSET] = TileType::Land; //bottom left
-        tile_array[STARTING_OFFSET+offset][MAP_X-STARTING_OFFSET-1] = TileType::Land; //top right
-        tile_array[MAP_Y-STARTING_OFFSET-1-offset][MAP_X-STARTING_OFFSET-1] = TileType::Land; //bottom right
-        
-        //horizontals
-        tile_array[STARTING_OFFSET][STARTING_OFFSET+offset] = TileType::Land; //top left
-        tile_array[MAP_Y-STARTING_OFFSET-1][STARTING_OFFSET+offset] = TileType::Land; //bottom left
-        tile_array[STARTING_OFFSET][MAP_X-STARTING_OFFSET-1-offset] = TileType::Land; //top right
-        tile_array[MAP_Y-STARTING_OFFSET-1][MAP_X-STARTING_OFFSET-1-offset] = TileType::Land; //bottom right
-        
-        //diagonals
-        tile_array[STARTING_OFFSET+offset][STARTING_OFFSET+offset] = TileType::Land; //top left
-        tile_array[MAP_Y-STARTING_OFFSET-1-offset][STARTING_OFFSET+offset] = TileType::Land; //bottom left
-        tile_array[STARTING_OFFSET+offset][MAP_X-STARTING_OFFSET-1-offset] = TileType::Land; //top right
-        tile_array[MAP_Y-STARTING_OFFSET-1-offset][MAP_X-STARTING_OFFSET-1-offset] = TileType::Land; //bottom right
-    }
-    tile_array
+    soldier_array[STARTING_OFFSET][STARTING_OFFSET] = Soldier{soldier_type: soldier_types.default, health: soldier_types.default.health, position_x: STARTING_OFFSET,position_y:STARTING_OFFSET};
+    soldier_array
 }
