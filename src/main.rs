@@ -20,6 +20,10 @@ struct GameState{
     camera_position: ggez::mint::Point2<f32>,
     zoom: ggez::mint::Point2<f32>,
     frames: usize,
+    soldier_types: SoldierTypes
+}
+struct SoldierTypes{
+    default: SoldierType
 }
 fn main() -> GameResult {
     let resource_dir = path::PathBuf::from("./resources");
@@ -41,7 +45,8 @@ impl GameState{
         let resource_map = generation::generate_resource_map(&mut tilemap, seed as u64);
         let tilemap_mesh = generation::generate_tilemap_mesh(ctx, tilemap);
         let resource_map_mesh = generation::generate_resource_map_mesh(ctx, resource_map);
-        let state = GameState{tilemap, tilemap_mesh,resource_map,resource_map_mesh, camera_position: ggez::mint::Point2 { x: 0.0, y: 0.0 },zoom: ggez::mint::Point2 { x: 1.0, y: 1.0 }, frames: 0};
+        let soldier_types = initialize_soldier_types(ctx);
+        let state = GameState{tilemap, tilemap_mesh,resource_map,resource_map_mesh,soldier_types ,camera_position: ggez::mint::Point2 { x: 0.0, y: 0.0 },zoom: ggez::mint::Point2 { x: 1.0, y: 1.0 }, frames: 0};
         Ok(state)
     }
 }
@@ -127,4 +132,9 @@ fn draw_game(canvas: &mut Canvas, state: &mut GameState){
     let default_draw_param = DrawParam::dest(DrawParam::default(),state.camera_position).scale(state.zoom);
     canvas.draw(&state.tilemap_mesh, default_draw_param);
     canvas.draw(&state.resource_map_mesh, default_draw_param);
+}
+fn initialize_soldier_types(ctx: &mut Context) -> SoldierTypes{
+    let default_soldier = SoldierType{image: Image::from_path(ctx, "/king_w.png").unwrap(),damage: 5, health: 10};
+    let soldier_types = SoldierTypes{default: default_soldier};
+    soldier_types
 }
