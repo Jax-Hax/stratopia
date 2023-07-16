@@ -3,7 +3,7 @@ use ggez::{
     graphics::{Color, DrawMode, Mesh, MeshBuilder, Rect},
     Context,
 };
-use crate::{structs::*, SoldierImages};
+use crate::structs::*;
 use rand::{Rng, SeedableRng};
 //Constants
 const MAP_X: usize = 22; //This number unfortunately has to be fixed as I couldn't wrap my head around calculating everything for any possible number

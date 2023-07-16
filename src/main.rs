@@ -82,6 +82,7 @@ impl event::EventHandler<ggez::GameError> for GameState {
         match btn {
             MouseButton::Left => {
                 //Left click
+                println!("{},{}",x,y);
             }
             _ => (),
         }
