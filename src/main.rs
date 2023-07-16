@@ -22,6 +22,7 @@ struct GameState{
     zoom: ggez::mint::Point2<f32>,
     frames: usize,
     soldier_images: SoldierImages,
+    default_draw_param: DrawParam,
 }
 struct SoldierImages{
     default: Image
@@ -48,7 +49,10 @@ impl GameState{
         let resource_map_mesh = generation::generate_resource_map_mesh(ctx, resource_map);
         let soldier_images = initialize_soldier_images(ctx);
         let soldier_map = generation::generate_soldier_map();
-        let state = GameState{tilemap, tilemap_mesh,resource_map,resource_map_mesh,soldier_map, soldier_images ,camera_position: ggez::mint::Point2 { x: 0.0, y: 0.0 },zoom: ggez::mint::Point2 { x: 1.0, y: 1.0 }, frames: 0};
+        let camera_position = ggez::mint::Point2 { x: 0.0, y: 0.0 };
+        let zoom = ggez::mint::Point2 { x: 1.0, y: 1.0 };
+        let default_draw_param = DrawParam::default();
+        let state = GameState{tilemap, tilemap_mesh,resource_map,resource_map_mesh,soldier_map, default_draw_param, soldier_images ,camera_position,zoom, frames: 0};
         Ok(state)
     }
 }
@@ -112,6 +116,7 @@ impl event::EventHandler<ggez::GameError> for GameState {
             self.camera_position.x += dx;
             self.camera_position.y += dy;
         }
+        self.default_draw_param = DrawParam::dest(self.default_draw_param,self.camera_position);
         Ok(())
     }
     fn mouse_wheel_event(&mut self, _ctx: &mut Context, _x: f32, y: f32) -> GameResult {
@@ -125,22 +130,22 @@ impl event::EventHandler<ggez::GameError> for GameState {
         }
         self.zoom.x = self.zoom.x.clamp(0.5, 3.0);
         self.zoom.y = self.zoom.y.clamp(0.5, 3.0);
+        self.default_draw_param = DrawParam::scale(self.default_draw_param,self.zoom);
         Ok(())
     }
     
 }
 fn draw_game(canvas: &mut Canvas, state: &mut GameState){
     //TODO: implement the zoom better, calculating an offset to make it zoom based on the center maybe
-    let default_draw_param = DrawParam::dest(DrawParam::default(),state.camera_position).scale(state.zoom);
-    canvas.draw(&state.tilemap_mesh, default_draw_param);
-    canvas.draw(&state.resource_map_mesh, default_draw_param);
-    draw_soldiers(canvas, state.soldier_map,state.soldier_images);
+    canvas.draw(&state.tilemap_mesh, state.default_draw_param);
+    canvas.draw(&state.resource_map_mesh, state.default_draw_param);
+    draw_soldiers(canvas, state.soldier_map,&state.soldier_images,state.default_draw_param);
 }
 fn initialize_soldier_images(ctx: &mut Context) -> SoldierImages{
     let soldier_images = SoldierImages{default: Image::from_path(ctx, "/soldier.png").unwrap()};
     soldier_images
 }
-fn draw_soldiers(canvas: &mut Canvas, soldier_map:[[Soldier; MAP_X]; MAP_Y],soldier_images: SoldierImages){
+fn draw_soldiers(canvas: &mut Canvas, soldier_map:[[Soldier; MAP_X]; MAP_Y],soldier_images: &SoldierImages,default_draw_param:DrawParam){
     for row in 0..MAP_X {
         for col in 0..MAP_Y {
             let soldier = soldier_map[col][row];
@@ -148,13 +153,12 @@ fn draw_soldiers(canvas: &mut Canvas, soldier_map:[[Soldier; MAP_X]; MAP_Y],sold
                 continue;
             } 
             let image = match soldier.soldier_type{
-                SoldierType::Default => soldier_images.default,
-                _ => soldier_images.default
+                SoldierType::Default => &soldier_images.default,
+                _ => &soldier_images.default
             };
             let x = row as f32 * 50.0;
             let y = col as f32 * 50.0;
-            let rect = Rect::new(x, y, 50.0, 50.0);
-            canvas.draw(soldier_images.default, draw_param);
+            canvas.draw(image, default_draw_param);
         }
     }
 }
